@@ -309,11 +309,13 @@ class WinTap(Tap):
         return mac_string
 
     def _getNameByMac(self,mac):
-        result = subprocess.check_output("ipconfig/all",shell=True).decode("gbk").encode().decode()
-        res = result.split("适配器")
+        macstr = self._mac2string(mac).replace("-",":")
+        sh = subprocess.check_output("chcp 65001 | wmic nic get NetConnectionID,MACAddress",shell=True)
+        result = sh.decode("cp1251").encode().decode()
+        res = result.split("\r\r\n")
         for i in range(1,len(res)):
-            if res[i].find(self._mac2string(mac))>0:
-                return res[i].split(":")[0].strip()
+            if res[i].find(macstr)>=0:
+                return res[i].replace(macstr,"").strip()
 
     def create(self):
         guid = self._get_device_guid()
